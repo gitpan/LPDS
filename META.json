@@ -1,5 +1,5 @@
 {
-   "abstract" : "The great new LPDS!",
+   "abstract" : "Help you decide a laptop",
    "author" : [
       "\"Xi Yang\" <\"yangx@im.ac.cn\">"
    ],
@@ -38,7 +38,7 @@
    "provides" : {
       "LPDS" : {
          "file" : "lib/LPDS.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       },
       "LPDS::Renderer" : {
          "file" : "lib/LPDS/Renderer.pm",
@@ -63,5 +63,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }

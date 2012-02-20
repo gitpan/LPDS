@@ -6,38 +6,27 @@ use warnings;
 
 =head1 NAME
 
-LPDS - The great new LPDS!
+LPDS - Help you decide a laptop
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+Just run it:
 
-Perhaps a little code snippet.
+ perl LPDS.pl
 
-    use LPDS;
+=head1 DESCRIPTION
 
-    my $foo = LPDS->new();
-    ...
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
-=head1 SUBROUTINES/METHODS
-
-=cut
-
-
+This is a GUI software which lists hardwares of different laptops in a table, and compare laptop hardwares using graph.
+It might provide you some help to decide which laptop to buy.
 
 =head1 AUTHOR
 

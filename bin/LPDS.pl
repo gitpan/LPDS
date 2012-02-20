@@ -85,12 +85,12 @@ sub load_gui {
     $BUILDER = Gtk2::Builder->new;
     $BUILDER->add_from_file($file_glade);
     $BUILDER->connect_signals;
-    
+
     # set init path of file choosers to current
     my $cwd = getcwd();
     $BUILDER->get_object('AppendDialog')->set_current_folder($cwd);
     $BUILDER->get_object('SaveDialog')->set_current_folder($cwd);
-    
+
     # exit on main window destroy
     my $mw = $BUILDER->get_object('MainWindow');
 
@@ -142,62 +142,99 @@ sub load_gui {
     # renderer for table
     #
 
+    # name
     my @columns;
     push @columns,
       Gtk2::TreeViewColumn->new_with_attributes( "Name",
         Gtk2::CellRendererText->new, 'text', COL_NAME );
 
-    my $renderer_table_cpu = Gtk2::CellRendererCombo->new;
-    $renderer_table_cpu->set(
-        model       => $BUILDER->get_object('CPUListStore'),
-        text_column => 0
-    );
-    $renderer_table_cpu->signal_connect( 'changed', \&on_cpu_renderer_changed );
-
-    my $col_cpu = Gtk2::TreeViewColumn->new;
-    $col_cpu->set_title('CPU');
-    $col_cpu->pack_start( $renderer_table_cpu, TRUE );
-    $col_cpu->add_attribute( $renderer_table_cpu, 'text', COL_CPU_NAME );
-
-    push @columns, $col_cpu;
-
-    my $renderer_table_gpu = Gtk2::CellRendererCombo->new;
-    $renderer_table_gpu->set(
-        model       => $BUILDER->get_object('GPUListStore'),
-        text_column => 0
-    );
-    $renderer_table_gpu->signal_connect( 'changed', \&on_gpu_renderer_changed );
-    my $col_gpu = Gtk2::TreeViewColumn->new;
-    $col_gpu->set_title('GPU');
-    $col_gpu->pack_start( $renderer_table_gpu, TRUE );
-    $col_gpu->add_attribute( $renderer_table_gpu, 'text', COL_GPU_NAME );
-    push @columns, $col_gpu;
-
+    # CPU name
     push @columns,
-      Gtk2::TreeViewColumn->new_with_attributes( "Mem Size",
-        Gtk2::CellRendererText->new, 'text', COL_MEM_SZ );
+      Gtk2::TreeViewColumn->new_with_attributes( "CPU",
+        Gtk2::CellRendererText->new, 'text', COL_CPU_NAME );
+
+    # GPU name
+    push @columns,
+      Gtk2::TreeViewColumn->new_with_attributes( "GPU",
+        Gtk2::CellRendererText->new, 'text', COL_GPU_NAME );
+
+    # memory
+    my $renderer_col_mem_sz = Gtk2::CellRendererText->new;
+    my $col_mem_sz          = Gtk2::TreeViewColumn->new();
+    $col_mem_sz->set( title => 'Memory Size' );
+    $col_mem_sz->pack_start( $renderer_col_mem_sz, TRUE );
+    $col_mem_sz->set_cell_data_func(
+        $renderer_col_mem_sz,
+        sub {
+            my ( $col, $cell, $store, $iter ) = @_;
+            my $value = $store->get( $iter, COL_MEM_SZ );
+            my $text;
+            if ( !defined $value ) {
+                $text = '';
+            }
+            elsif ( $value >= 1 ) {
+                $text = sprintf( '%.01f', $value ) . ' GiB';
+            }
+            else {
+                $text = int( $value * 1024 ) . 'MiB';
+            }
+            $cell->set( 'text' => $text );
+        }
+    );
+    push @columns, $col_mem_sz;
+
+    # memory frequency
     push @columns,
       Gtk2::TreeViewColumn->new_with_attributes( "Mem Freq.",
         Gtk2::CellRendererText->new, 'text', COL_MEM_FREQ );
-    push @columns,
-      Gtk2::TreeViewColumn->new_with_attributes( "Disk Size",
-        Gtk2::CellRendererText->new, 'text', COL_DISK_SZ );
+
+    # disk size
+    my $renderer_col_disk_sz = Gtk2::CellRendererText->new;
+    my $col_disk_sz          = Gtk2::TreeViewColumn->new;
+    $col_disk_sz->set( title => 'Disk Size' );
+    $col_disk_sz->pack_start( $renderer_col_disk_sz, TRUE );
+    $col_disk_sz->set_cell_data_func(
+        $renderer_col_disk_sz,
+        sub {
+            my ( $col, $cell, $store, $iter ) = @_;
+            my $value = $store->get( $iter, COL_DISK_SZ );
+            $cell->set( text => int($value) . ' GiB' );
+        }
+    );
+    push @columns, $col_disk_sz;
+
+    # disk rotation speed
     push @columns,
       Gtk2::TreeViewColumn->new_with_attributes( "Disk Rot.",
         Gtk2::CellRendererText->new, 'text', COL_DISK_ROT );
-    push @columns,
-      Gtk2::TreeViewColumn->new_with_attributes( "Screen Size",
-        Gtk2::CellRendererText->new, 'text', COL_SCREEN_SZ );
-    push @columns,
-      Gtk2::TreeViewColumn->new_with_attributes( "Price",
-        Gtk2::CellRendererText->new, 'text', COL_PRICE );
+
+    # screen size
+    my $renderer_col_screen_sz = Gtk2::CellRendererText->new;
+    my $col_screen_sz = Gtk2::TreeViewColumn->new;
+    $col_screen_sz->set(title=>'Screen Size');
+    $col_screen_sz->pack_start($renderer_col_screen_sz,TRUE);
+    $col_screen_sz->set_cell_data_func($renderer_col_screen_sz,sub{
+        my ( $col, $cell, $store, $iter ) = @_;
+        my $value = $store->get( $iter, COL_SCREEN_SZ );
+        $cell->set(text=>sprintf('%.01f',$value));
+    });
+    push @columns,$col_screen_sz;
+
+    # price
+    my $renderer_col_price = Gtk2::CellRendererText->new;
+    my $col_price = Gtk2::TreeViewColumn->new;
+    $col_price->set(title=>'Price');
+    $col_price->pack_start($renderer_col_price,TRUE);
+    $col_price->set_cell_data_func($renderer_col_price,sub{
+        my ( $col, $cell, $store, $iter ) = @_;
+        my $value = $store->get( $iter, COL_PRICE );
+        $cell->set(text=>sprintf('%.02f',$value));
+    });
+    push @columns,$col_price;
 
     foreach my $col (@columns) {
         $col->set_resizable(TRUE);
         $col->set( expand => TRUE );
-
-        #        my @renderers = $col->get_cell_renderers;
-        #        $_->set( 'editable', TRUE ) foreach @renderers;
         $table->append_column($col);
     }
 }
@@ -318,17 +355,18 @@ sub data_to_config_dialog {
 sub load_file {
     my $file = shift;
     say "load $file";
-    
+
     my $store = $BUILDER->get_object('ModelListStore');
-    my @data = LoadFile($file);
-    
+    my @data  = LoadFile($file);
+
     foreach my $curr (@data) {
         say Dump $curr;
         my $iter = $store->append;
-        foreach my $key (keys %$curr) {
-            confess "$file contain invalid field: '$key'" if !exists $NAME_COLS{$key};
+        foreach my $key ( keys %$curr ) {
+            confess "$file contain invalid field: '$key'"
+              if !exists $NAME_COLS{$key};
             my $col = $NAME_COLS{$key};
-            $store->set($iter,$col,$curr->{$key});
+            $store->set( $iter, $col, $curr->{$key} );
         }
     }
 }
@@ -345,21 +383,21 @@ sub save_file {
       )
     {
         my %curr_data;
-        
+
         for ( COL_NAME, COL_CPU_NAME, COL_GPU_NAME, COL_MEM_SZ,
             COL_MEM_FREQ, COL_DISK_SZ, COL_DISK_ROT, COL_SCREEN_SZ,
             COL_PRICE,    COL_COLOR
           )
         {
             my $key = $COL_NAMES[$_];
-            my $val = $store->get($iter,$_);
+            my $val = $store->get( $iter, $_ );
             $curr_data{$key} = $val;
         }
-        
-        push @data,\%curr_data;
+
+        push @data, \%curr_data;
     }
-    
-    DumpFile($file,@data);
+
+    DumpFile( $file, @data );
 }
 
 sub warn_user {
@@ -427,50 +465,49 @@ sub clear_current {
 
 sub on_ClearButton_clicked {
     my $dialog = $BUILDER->get_object('ClearDialog');
-    my $re = $dialog->run;
-    
-    if ($re eq 'no') {
-        
+    my $re     = $dialog->run;
+
+    if ( $re eq 'no' ) {
+
     }
-    elsif ($re eq 'yes') {
+    elsif ( $re eq 'yes' ) {
         clear_current();
     }
     else {
         confess "invalid return from clear dialog: '$re'";
     }
-    
+
     $dialog->hide;
 }
 
 sub on_AppendButton_clicked {
     my $dialog = $BUILDER->get_object('AppendDialog');
-    my $re = $dialog->run;
-    
-    if ($re==0) {
-        load_file($dialog->get_filename);
+    my $re     = $dialog->run;
+
+    if ( $re == 0 ) {
+        load_file( $dialog->get_filename );
     }
-    
+
     $dialog->hide;
 }
 
-
 sub on_SaveButton_clicked {
     my $dialog = $BUILDER->get_object('SaveDialog');
-    my $re = $dialog->run;
+    my $re     = $dialog->run;
     $dialog->hide;
-    
-    if ($re==0) {
+
+    if ( $re == 0 ) {
         my $file = $dialog->get_filename;
         say "SaveDialog: $file";
-        
-        if (-f $file) {
+
+        if ( -f $file ) {
             my $over_dialog = $BUILDER->get_object('OverwriteDialog');
-            $over_dialog->set('secondary-text',$file);
-            
+            $over_dialog->set( 'secondary-text', $file );
+
             my $re_over = $over_dialog->run();
             $over_dialog->hide;
-            
-            if ($re_over =~ /yes/i) {
+
+            if ( $re_over =~ /yes/i ) {
                 save_file($file);
             }
         }
@@ -483,14 +520,15 @@ sub on_SaveButton_clicked {
 sub on_AppendDialog_file_activated {
     my $dialog = shift;
     say "on_AppendDialog_file_activated";
-#    load_file($dialog->get_filename);
+
+    #    load_file($dialog->get_filename);
     $dialog->hide;
 }
 
 sub on_SaveDialog_file_activated {
     my $dialog = shift;
     say "SaveDialog file activated";
-    say "file: ",$dialog->get_filename;
+    say "file: ", $dialog->get_filename;
     $dialog->hide;
 }
 

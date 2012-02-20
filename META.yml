@@ -1,5 +1,5 @@
 ---
-abstract: 'The great new LPDS!'
+abstract: 'Help you decide a laptop'
 author:
   - "\"Xi Yang\" <\"yangx@im.ac.cn\">"
 build_requires:
@@ -16,7 +16,7 @@ name: LPDS
 provides:
   LPDS:
     file: lib/LPDS.pm
-    version: 0.01
+    version: 0.02
   LPDS::Renderer:
     file: lib/LPDS/Renderer.pm
     version: 0
@@ -38,4 +38,4 @@ requires:
   perl: v5.10.0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02
